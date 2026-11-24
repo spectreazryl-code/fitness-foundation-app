@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#090d16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Fitness Foundation</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">FF</div>
+        <div>
+          <h1>Fitness Foundation</h1>
+          <p class="subtitle">3-Week Starting Plan</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="syncBadgeBtn" class="sync-pill" title="Google Sheet Sync Status">
+          <span class="dot" id="syncDot"></span>
+          <span id="syncText">Local Only</span>
+        </button>
+        <button id="openSettingsBtn" class="icon-btn" aria-label="Settings" title="Settings & Sheet Sync">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Bottom / Top Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-tab="workout">Workout</button>
+      <button class="nav-tab" data-tab="schedule">Schedule</button>
+      <button class="nav-tab" data-tab="history">History <span id="pendingCountBadge" class="badge hidden">0</span></button>
+      <button class="nav-tab" data-tab="guide">Guide</button>
+    </nav>
+
+    <!-- TAB 1: WORKOUT -->
+    <main id="tab-workout" class="tab-panel active">
+      <!-- Week Selector & Focus -->
+      <section class="card week-card">
+        <div class="week-pills" id="weekPills">
+          <button class="week-pill active" data-week="1">Week 1</button>
+          <button class="week-pill" data-week="2">Week 2</button>
+          <button class="week-pill" data-week="3">Week 3</button>
+        </div>
+        <p class="week-focus" id="weekFocusText"></p>
+      </section>
+
+      <!-- Day Switcher Strip -->
+      <section class="day-strip" id="dayStrip" aria-label="Day of Week"></section>
+
+      <!-- Active Session Header & Progress -->
+      <section class="session-banner" id="sessionBanner">
+        <div>
+          <span class="session-tag" id="sessionTypeTag">Strength Session</span>
+          <h2 id="sessionTitle">Lower body + core</h2>
+          <p class="session-notes" id="sessionNotes">Strength session</p>
+        </div>
+        <div class="progress-ring-wrap">
+          <div class="progress-text">
+            <strong id="progressCount">0/0</strong>
+            <span>sets</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Warm-Up Collapsible (only for strength days) -->
+      <section class="card warmup-card hidden" id="warmupCard">
+        <button class="warmup-toggle" id="warmupToggleBtn" aria-expanded="false">
+          <div>
+            <strong>Pre-Workout Warm-Up (5–8 min)</strong>
+            <span class="muted" id="warmupStatus">0/4 done</span>
+          </div>
+          <span class="chevron" id="warmupChevron">▼</span>
+        </button>
+        <div class="warmup-list hidden" id="warmupList"></div>
+      </section>
+
+      <!-- Exercise List Container -->
+      <section id="exerciseContainer" class="exercise-list"></section>
+
+      <!-- Rest / Recovery Day View -->
+      <section id="recoveryView" class="card recovery-card hidden">
+        <div class="recovery-emoji" id="recoveryEmoji">🚶‍♂️</div>
+        <h3 id="recoveryHeading">Recovery / Walking / Mobility</h3>
+        <p id="recoveryBody">Keep it light; optional easy movement.</p>
+        <div class="recovery-tips">
+          <p>Mild muscle soreness is normal when starting. Allow recovery between demanding sessions.</p>
+        </div>
+      </section>
+
+      <!-- Finish & Sync Footer -->
+      <section class="card finish-card" id="finishCard">
+        <label class="field-label" for="sessionRemarks">Session Notes (optional)</label>
+        <textarea id="sessionRemarks" rows="2" placeholder="How did energy, form, or load feel today?"></textarea>
+        <div class="finish-actions">
+          <button id="resetTodayBtn" class="btn btn-secondary">Reset Sets</button>
+          <button id="finishWorkoutBtn" class="btn btn-primary">Save &amp; Sync Session</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- TAB 2: WEEKLY SCHEDULE -->
+    <main id="tab-schedule" class="tab-panel">
+      <section class="card">
+        <h2>Weekly Schedule</h2>
+        <p class="muted small" id="frequencyNoteText"></p>
+        <div class="schedule-list" id="fullScheduleList"></div>
+      </section>
+      <section class="card">
+        <h2>Three-Week Progression Targets</h2>
+        <div class="progression-list" id="progressionList"></div>
+      </section>
+    </main>
+
+    <!-- TAB 3: WORKOUT HISTORY -->
+    <main id="tab-history" class="tab-panel">
+      <section class="card history-toolbar">
+        <div>
+          <h2>Logged Sessions</h2>
+          <p class="muted small" id="historySummary">Saved locally on device</p>
+        </div>
+        <div class="toolbar-btns">
+          <button id="syncPendingBtn" class="btn btn-primary btn-sm hidden">Sync Pending</button>
+          <button id="pullSheetBtn" class="btn btn-secondary btn-sm">Refresh</button>
+        </div>
+      </section>
+      <section id="historyList" class="history-list"></section>
+    </main>
+
+    <!-- TAB 4: TECHNIQUE & SAFETY GUIDE -->
+    <main id="tab-guide" class="tab-panel">
+      <section class="card">
+        <h2>Technique &amp; Recovery Notes</h2>
+        <ul class="notes-list" id="notesList"></ul>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- Floating Rest / Hold Timer Bar -->
+  <div id="timerBar" class="timer-bar hidden" role="status" aria-live="polite">
+    <div class="timer-left">
+      <span class="timer-label" id="timerLabel">Rest Timer</span>
+      <span class="timer-clock" id="timerClock">01:30</span>
+    </div>
+    <div class="timer-controls">
+      <button class="timer-btn" id="timerSubBtn">-15s</button>
+      <button class="timer-btn" id="timerAddBtn">+15s</button>
+      <button class="timer-btn timer-stop" id="timerStopBtn">Skip</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="settingsTitle">Google Sheet Sync &amp; Settings</h2>
+        <button id="closeSettingsBtn" class="icon-btn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="muted small">
+          Paste your deployed <strong>Google Apps Script Web App URL</strong> to sync workout logs directly to your Google Sheet.
+        </p>
+
+        <label class="field-label" for="scriptUrlInput">Apps Script Web App URL</label>
+        <input id="scriptUrlInput" type="url" placeholder="https://script.google.com/macros/s/.../exec" />
+
+        <label class="field-label" for="syncSecretInput">Sync Passcode (optional, must match Apps Script)</label>
+        <input id="syncSecretInput" type="text" placeholder="e.g. my-secret-pin" />
+
+        <div class="modal-actions">
+          <button id="testConnBtn" class="btn btn-secondary">Test Connection</button>
+          <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="data-tools">
+          <button id="exportJsonBtn" class="btn btn-secondary btn-sm">Export Logs (JSON)</button>
+          <button id="clearHistoryBtn" class="btn btn-danger btn-sm">Clear Local History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
