@@ -67,6 +67,25 @@
     return DATA.schedule.find((s) => s.dayIndex === dayIndex) || DATA.schedule[0];
   }
 
+  function getEffectiveSchedule(dayIndex) {
+    const base = getDaySchedule(dayIndex);
+    const dayDraft = getDayDraft(dayIndex);
+    if (
+      base.sections.length === 0 &&
+      Array.isArray(dayDraft.overrideSections) &&
+      dayDraft.overrideSections.length > 0
+    ) {
+      return {
+        ...base,
+        sections: dayDraft.overrideSections,
+        title: dayDraft.overrideTitle || base.title,
+        notes: "One-time workout override (weekly schedule unchanged)",
+        isOverride: true
+      };
+    }
+    return base;
+  }
+
   function getDayDraft(dayIndex) {
     if (!state.draft[dayIndex]) {
       state.draft[dayIndex] = { warmup: {}, sets: {}, remarks: "" };
@@ -252,7 +271,7 @@
     renderWeekSelector();
     renderDayStrip();
 
-    const sched = getDaySchedule(state.selectedDayIndex);
+    const sched = getEffectiveSchedule(state.selectedDayIndex);
     const dayDraft = getDayDraft(state.selectedDayIndex);
     const isToday = state.selectedDayIndex === new Date().getDay();
 
@@ -260,7 +279,23 @@
       ? `Today • ${sched.day}`
       : sched.day;
     document.getElementById("sessionTitle").textContent = sched.title;
-    document.getElementById("sessionNotes").textContent = sched.notes;
+
+    const notesEl = document.getElementById("sessionNotes");
+    notesEl.textContent = sched.notes;
+    if (sched.isOverride) {
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "override-clear-btn";
+      cancelBtn.textContent = "Back to Rest";
+      cancelBtn.addEventListener("click", () => {
+        delete dayDraft.overrideSections;
+        delete dayDraft.overrideTitle;
+        saveDraftStorage();
+        stopTimer(true);
+        renderWorkoutTab();
+      });
+      notesEl.appendChild(cancelBtn);
+    }
 
     const warmupCard = document.getElementById("warmupCard");
     const exerciseContainer = document.getElementById("exerciseContainer");
@@ -555,7 +590,7 @@
   }
 
   async function finishAndSyncWorkout() {
-    const sched = getDaySchedule(state.selectedDayIndex);
+    const sched = getEffectiveSchedule(state.selectedDayIndex);
     const dayDraft = getDayDraft(state.selectedDayIndex);
 
     const exerciseLogs = [];
@@ -685,6 +720,20 @@
     document.getElementById("finishWorkoutBtn").addEventListener("click", finishAndSyncWorkout);
     document.getElementById("syncPendingBtn").addEventListener("click", syncAllPending);
     document.getElementById("pullSheetBtn").addEventListener("click", pullFromSheet);
+
+    const activateOverride = (sections, title) => {
+      const dayDraft = getDayDraft(state.selectedDayIndex);
+      dayDraft.overrideSections = sections;
+      dayDraft.overrideTitle = title;
+      saveDraftStorage();
+      renderWorkoutTab();
+    };
+    document.getElementById("loadLowerCoreBtn").addEventListener("click", () => {
+      activateOverride(["lower", "core"], "Lower body + core");
+    });
+    document.getElementById("loadUpperBtn").addEventListener("click", () => {
+      activateOverride(["upper"], "Upper body");
+    });
 
     // Timer controls
     document.getElementById("timerSubBtn").addEventListener("click", () => adjustTimer(-15));

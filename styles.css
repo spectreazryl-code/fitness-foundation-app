@@ -549,6 +549,26 @@ html, body {
 }
 .recovery-tips p { margin: 0; color: #cbd5e1; }
 
+.recovery-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.override-clear-btn {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* Inputs & Buttons */
 .field-label {
   display: block;
