@@ -26,6 +26,27 @@
   };
 
   // --- Helpers ---
+  function getLocalTodayStr() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function isWeekDone(weekObj) {
+    if (!weekObj || !weekObj.endDate) return false;
+    return getLocalTodayStr() > weekObj.endDate;
+  }
+
+  function getCurrentWeekByDate() {
+    const today = getLocalTodayStr();
+    for (const w of DATA.weeks) {
+      if (today <= w.endDate) return w.week;
+    }
+    return DATA.weeks[DATA.weeks.length - 1].week;
+  }
+
   function loadStorage() {
     try {
       const s = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS) || "{}");
@@ -33,7 +54,8 @@
         scriptUrl: s.scriptUrl || "",
         syncSecret: s.syncSecret || ""
       };
-      if (s.selectedWeek) state.selectedWeek = Number(s.selectedWeek);
+      // Always default to the active calendar week when opening the app
+      state.selectedWeek = getCurrentWeekByDate();
 
       const d = JSON.parse(localStorage.getItem(STORAGE_KEYS.DRAFT) || "{}");
       state.draft = d;
@@ -200,11 +222,23 @@
 
   function renderWeekSelector() {
     document.querySelectorAll(".week-pill").forEach((btn) => {
-      const w = Number(btn.dataset.week);
-      btn.classList.toggle("active", w === state.selectedWeek);
+      const wNum = Number(btn.dataset.week);
+      const wObj = DATA.weeks.find((item) => item.week === wNum);
+      const done = isWeekDone(wObj);
+      btn.classList.toggle("active", wNum === state.selectedWeek);
+      btn.classList.toggle("done", done);
+      btn.innerHTML = `
+        <span class="week-pill-top">
+          <span>${wObj ? wObj.label : "Week " + wNum}</span>
+          ${done ? '<span class="week-star" title="Week completed">★</span>' : ""}
+        </span>
+        ${wObj && wObj.dateRange ? `<span class="week-pill-dates">${wObj.dateRange}</span>` : ""}
+      `;
     });
     const info = DATA.weeks.find((w) => w.week === state.selectedWeek) || DATA.weeks[0];
-    document.getElementById("weekFocusText").textContent = `${info.label} Focus: ${info.focus}`;
+    const doneNote = isWeekDone(info) ? " ★ Completed" : "";
+    document.getElementById("weekFocusText").textContent =
+      `${info.label} (${info.dateRange})${doneNote} — ${info.focus}`;
   }
 
   function renderDayStrip() {
@@ -461,9 +495,15 @@
     const progList = document.getElementById("progressionList");
     progList.innerHTML = "";
     DATA.weeks.forEach((w) => {
+      const done = isWeekDone(w);
       const row = document.createElement("div");
       row.className = "schedule-row";
-      row.innerHTML = `<div><strong>${w.label}</strong><span>${w.focus}</span></div>`;
+      row.innerHTML = `
+        <div>
+          <strong>${w.label} (${w.dateRange}) ${done ? '<span class="week-star">★</span>' : ""}</strong>
+          <span>${w.focus}</span>
+        </div>
+      `;
       progList.appendChild(row);
     });
 

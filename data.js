@@ -10,16 +10,25 @@ window.FITNESS_DATA = {
     {
       week: 1,
       label: "Week 1",
+      startDate: "2026-11-23",
+      endDate: "2026-11-29",
+      dateRange: "23 Nov – 29 Nov",
       focus: "Learn the movements; use a comfortable range; prioritise controlled technique."
     },
     {
       week: 2,
       label: "Week 2",
+      startDate: "2026-11-30",
+      endDate: "2026-12-06",
+      dateRange: "30 Nov – 6 Dec",
       focus: "Aim for steadier movement and consistent reps. Do not add load if form is not solid."
     },
     {
       week: 3,
       label: "Week 3",
+      startDate: "2026-12-07",
+      endDate: "2026-12-13",
+      dateRange: "7 Dec – 13 Dec",
       focus: "Work towards the top of each rep range where comfortable; increase difficulty only when ready."
     }
   ],

@@ -197,7 +197,7 @@ html, body {
 }
 
 .week-pill {
-  padding: 8px;
+  padding: 8px 6px;
   border-radius: 9px;
   border: 1px solid var(--border);
   background: var(--surface-2);
@@ -205,6 +205,32 @@ html, body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.week-pill-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.week-pill-dates {
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.78;
+}
+
+.week-star {
+  color: #fbbf24;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.week-pill.done {
+  border-color: rgba(251, 191, 36, 0.35);
 }
 
 .week-pill.active {
