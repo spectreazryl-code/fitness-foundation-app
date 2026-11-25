@@ -721,18 +721,67 @@
     document.getElementById("syncPendingBtn").addEventListener("click", syncAllPending);
     document.getElementById("pullSheetBtn").addEventListener("click", pullFromSheet);
 
-    const activateOverride = (sections, title) => {
-      const dayDraft = getDayDraft(state.selectedDayIndex);
-      dayDraft.overrideSections = sections;
-      dayDraft.overrideTitle = title;
-      saveDraftStorage();
-      renderWorkoutTab();
+    const reviewModal = document.getElementById("overrideReviewModal");
+    let pendingOverride = null;
+
+    const openOverrideReview = (sections, title) => {
+      const sched = getDaySchedule(state.selectedDayIndex);
+      pendingOverride = { sections, title };
+
+      let totalEx = 0;
+      let totalSets = 0;
+      const listEl = document.getElementById("overrideReviewList");
+      listEl.innerHTML = "";
+
+      sections.forEach((secKey) => {
+        const sec = DATA.workouts[secKey];
+        if (!sec) return;
+        const secHeader = document.createElement("div");
+        secHeader.className = "review-section-title";
+        secHeader.textContent = sec.name;
+        listEl.appendChild(secHeader);
+
+        sec.exercises.forEach((ex) => {
+          totalEx += 1;
+          totalSets += ex.sets;
+          const row = document.createElement("div");
+          row.className = "review-item";
+          row.innerHTML = `
+            <strong>${ex.num}. ${escapeHtml(ex.name)}</strong>
+            <span>${ex.sets} × ${escapeHtml(ex.targetReps)} • ${escapeHtml(ex.load)}</span>
+          `;
+          listEl.appendChild(row);
+        });
+      });
+
+      document.getElementById("overrideReviewTitle").textContent = `Review: ${title}`;
+      document.getElementById("overrideReviewSubtitle").textContent =
+        `${totalEx} exercises • ${totalSets} total sets • 5–8 min warm-up included`;
+      document.getElementById("overrideReviewDay").textContent = sched.day;
+      reviewModal.classList.remove("hidden");
     };
+
+    const closeOverrideReview = () => {
+      pendingOverride = null;
+      reviewModal.classList.add("hidden");
+    };
+
     document.getElementById("loadLowerCoreBtn").addEventListener("click", () => {
-      activateOverride(["lower", "core"], "Lower body + core");
+      openOverrideReview(["lower", "core"], "Lower body + core");
     });
     document.getElementById("loadUpperBtn").addEventListener("click", () => {
-      activateOverride(["upper"], "Upper body");
+      openOverrideReview(["upper"], "Upper body");
+    });
+    document.getElementById("closeReviewBtn").addEventListener("click", closeOverrideReview);
+    document.getElementById("cancelReviewBtn").addEventListener("click", closeOverrideReview);
+    document.getElementById("confirmReviewBtn").addEventListener("click", () => {
+      if (!pendingOverride) return;
+      const dayDraft = getDayDraft(state.selectedDayIndex);
+      dayDraft.overrideSections = pendingOverride.sections;
+      dayDraft.overrideTitle = pendingOverride.title;
+      saveDraftStorage();
+      closeOverrideReview();
+      renderWorkoutTab();
     });
 
     // Timer controls
