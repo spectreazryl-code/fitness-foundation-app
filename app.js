@@ -589,6 +589,9 @@
       return;
     }
 
+    const warmupTotal = DATA.warmup.length;
+    const warmupDone = DATA.warmup.filter((w) => Boolean(dayDraft.warmup[w.id])).length;
+
     const now = new Date();
     const entry = {
       id: `ff_${now.getTime()}`,
@@ -603,6 +606,7 @@
       week: state.selectedWeek,
       day: sched.day,
       sessionTitle: sched.title,
+      warmup: `${warmupDone}/${warmupTotal}`,
       remarks: (dayDraft.remarks || "").trim(),
       exercises: exerciseLogs,
       synced: false
